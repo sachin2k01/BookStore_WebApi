@@ -11,6 +11,6 @@ namespace RepositoryLayer.Interfaces
     public interface IuserRepo
     {
         public userRegisterModel RegisterUser(userRegisterModel model);
-        public userEntity LoginUser(userLoginModel loginModel);
+        public string LoginUser(userLoginModel loginModel);
     }
 }

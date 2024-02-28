@@ -35,10 +35,10 @@ namespace BookStore_WebAPI.Controllers
         [Route("login")]
         public IActionResult userLogin(userLoginModel userLogin)
         {
-            userEntity loginUser = _iuserBusiness.LoginUser(userLogin);
+            string loginUser = _iuserBusiness.LoginUser(userLogin);
             if(loginUser != null)
             {
-                return Ok(new ResponseModel<userEntity> { Success = true, Message = "Login Successfull", Data = loginUser });
+                return Ok(new ResponseModel<string> { Success = true, Message = "Login Successfull", Data = loginUser });
             }
             else
             {

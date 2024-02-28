@@ -15,3 +15,4 @@ C:\Users\Hp\source\repos\BookStore_WebAPI\RepositoryLayer\obj\Debug\net6.0\refin
 C:\Users\Hp\source\repos\BookStore_WebAPI\RepositoryLayer\obj\Debug\net6.0\RepositoryLayer.pdb
 C:\Users\Hp\source\repos\BookStore_WebAPI\RepositoryLayer\obj\Debug\net6.0\RepositoryLayer.genruntimeconfig.cache
 C:\Users\Hp\source\repos\BookStore_WebAPI\RepositoryLayer\obj\Debug\net6.0\ref\RepositoryLayer.dll
+C:\Users\Hp\source\repos\BookStore_WebAPI\RepositoryLayer\obj\Debug\net6.0\RepositoryLayer.sourcelink.json
