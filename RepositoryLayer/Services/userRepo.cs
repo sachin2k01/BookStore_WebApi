@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using RepositoryLayer.Interfaces;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace RepositoryLayer.Services
 {
@@ -56,7 +59,7 @@ namespace RepositoryLayer.Services
             }
         }
 
-        public userEntity LoginUser(userLoginModel loginModel)
+        public string LoginUser(userLoginModel loginModel)
         {
             userEntity user=new userEntity();
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -86,7 +89,8 @@ namespace RepositoryLayer.Services
             }
             if (user.email == loginModel.email && DecryptPassword(user.password) == loginModel.password)
             {
-                return user;
+                var token = GenerateToken(user.email, user.userId);
+                return token;
             }
             else
             {
@@ -107,6 +111,25 @@ namespace RepositoryLayer.Services
             {
                 return $"Decryption Failed.! {ex.Message}";
             }
+        }
+
+
+        public string GenerateToken(string email, int userId)
+        {
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim("Email",email),
+                new Claim("UserId",userId.ToString())
+            };
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
+                claims,
+                expires: DateTime.Now.AddHours(5),
+                signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
