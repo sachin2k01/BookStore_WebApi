@@ -18,9 +18,23 @@ namespace BusinessLayer.Services
             return _iuserRepo.RegisterUser(model);
         }
 
-        public userEntity LoginUser(userLoginModel loginModel)
+        public string LoginUser(userLoginModel loginModel)
         {
             return _iuserRepo.LoginUser(loginModel);
+        }
+
+        public string deleteUser(int userId)
+        {
+            return _iuserRepo.deleteUser(userId);
+        }
+
+        public List<userEntity> getAllUsers()
+        {
+            return _iuserRepo.getAllUsers();
+        }
+        public userEntity getUserDetails(int userId)
+        {
+            return _iuserRepo.getUserDetails(userId);
         }
     }
 }

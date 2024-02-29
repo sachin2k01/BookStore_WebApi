@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Interfaces;
+using ModelLayer.Models;
 using RepositoryLayer.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,11 @@ namespace BusinessLayer.Services
         public userAddressBusiness(IUserAddressRepo iuserAddressRepo)
         {
             _iuserAddressRepo = iuserAddressRepo;
+        }
+
+        public AddressModel AddAdress(AddressModel address, int userId)
+        {
+            return _iuserAddressRepo.AddAdress(address, userId);
         }
     }
 }

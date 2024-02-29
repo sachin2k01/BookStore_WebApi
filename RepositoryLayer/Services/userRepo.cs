@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using RepositoryLayer.Interfaces;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace RepositoryLayer.Services
 {
@@ -56,7 +60,7 @@ namespace RepositoryLayer.Services
             }
         }
 
-        public userEntity LoginUser(userLoginModel loginModel)
+        public string LoginUser(userLoginModel loginModel)
         {
             userEntity user=new userEntity();
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -86,7 +90,8 @@ namespace RepositoryLayer.Services
             }
             if (user.email == loginModel.email && DecryptPassword(user.password) == loginModel.password)
             {
-                return user;
+                var token = GenerateToken(user.email, user.userId);
+                return token;
             }
             else
             {
@@ -108,5 +113,118 @@ namespace RepositoryLayer.Services
                 return $"Decryption Failed.! {ex.Message}";
             }
         }
+
+
+        public string GenerateToken(string email, int userId)
+        {
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim("Email",email),
+                new Claim("UserId",userId.ToString())
+            };
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
+                claims,
+                expires: DateTime.Now.AddHours(5),
+                signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string deleteUser(int userId)
+        {
+            using(SqlConnection connection=new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("spDeleteUser", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@userId", userId);
+                connection.Open();
+                int rows=cmd.ExecuteNonQuery();
+
+                if (rows > 0)
+                {
+                    return "user Deleted SucessFully";
+                }
+            }
+            return "user not deleted";
+        }
+
+
+        public List<userEntity> getAllUsers()
+        {
+            List<userEntity> users = new List<userEntity>();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("spGetAllUsers", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                try
+                {
+                    connection.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            userEntity user = new userEntity()
+                            {
+                                userId = Convert.ToInt32(reader["userId"]),
+                                userName = reader["userName"].ToString(),
+                                email = reader["email"].ToString(),
+                                password = reader["password"].ToString(),
+                                mobnum = reader["mobnum"].ToString()
+                            };
+                            users.Add(user);
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    // Handle SQL exceptions here, such as logging the error or throwing it further
+                    Console.WriteLine("Error retrieving users: " + ex.Message);
+                }
+            }
+            return users;
+        }
+
+
+        public userEntity getUserDetails(int userId)
+        {
+            userEntity user = new userEntity();
+            using(SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("spGetUserDetails", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@userId",userId);
+                connection.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        userEntity userData = new userEntity()
+                        {
+                            userId = Convert.ToInt32(reader["userID"]),
+                            userName = reader["userName"].ToString(),
+                            email = reader["email"].ToString(),
+                            password = reader["password"].ToString(),
+                            mobnum = reader["mobnum"].ToString()
+
+                        };
+                        user = userData;
+                    }
+                }
+            }
+            if(user!=null)
+            {
+                return user;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
     }
 }
